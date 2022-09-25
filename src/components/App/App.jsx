@@ -1,121 +1,98 @@
-/* eslint-disable class-methods-use-this */
-import React from 'react';
-import './App.css';
-import { formatDistance } from 'date-fns';
+import React, { useState } from "react";
 
-import Footer from '../Footer/Footer';
-import NewTaskForm from '../NewTaskForm/NewTaskForm';
-import TackList from '../TaskList/TaskList';
+import Footer from "../Footer/Footer";
 
-export default class App extends React.Component {
-  maxId = 0;
+import NewTaskForm from "../NewTaskForm/NewTaskForm";
 
-  constructor() {
-    super();
-    this.state = {
-      todoDate: [
-        { label: ' 4.2.7', id: 1 },
-        { label: 'bbbb', id: 2 },
-        { label: 'cccc', id: 3 },
-      ],
-      filter: '',
-    };
-  }
+import TaskList from "../TaskList/TaskList";
+import "./App.css";
 
-  addItem = (text) => {
-    const newItem = this.createNewTask(text);
-    this.setState(({ todoDate }) => {
-      const newArr = [...todoDate, newItem];
-      return { todoDate: newArr };
+const maxId = 0;
+function App() {
+  const createNewTask = (name) => ({
+    name,
+    done: false,
+    id: Math.random(maxId),
+  });
+
+  const todos = [
+    createNewTask("Drink coffe"),
+    createNewTask("I Like Sea"),
+    createNewTask("I Like Serf "),
+  ];
+
+  const [todoTask, setTodoTask] = useState(todos);
+
+  const [filtration, setFiltration] = useState("");
+  const deleteItem = (id) => {
+    setTodoTask((task) => {
+      const newArr = task.filter((el) => el.id !== id);
+      return newArr;
+    });
+  };
+  const deleteItems = () => {
+    setTodoTask((task) => {
+      const newArr = task.filter((el) => !el.done);
+      return newArr;
     });
   };
 
-  deleteItem = (id) => {
-    this.setState(({ todoDate }) => {
-      const idx = todoDate.findIndex((el) => el.id === id);
-      const newArray = [...todoDate.slice(0, idx), ...todoDate.slice(idx + 1)];
-      return {
-        todoDate: newArray,
-      };
+  const addItem = (item) => {
+    const newItem = createNewTask(item);
+
+    setTodoTask((task) => {
+      const newArray = [...task, newItem];
+      return newArray;
     });
   };
-
- 
-
-  onFilterChange = (filter) => {
-    this.setState({ filter });
-  };
-
- 
-  deleteItems = () => {
-    this.setState(({ todoDate }) => {
-      const doneCount = todoDate.filter((el) => !el.done);
-      return {
-        todoDate: doneCount,
-      };
-    });
-  };
-
-  onToggleDone = (id) => {
-    this.setState(({ todoDate }) => {
-      const idx = todoDate.findIndex((el) => el.id === id);
-
-      const oldItem = todoDate[idx];
+  const onToggleDone = (id) => {
+    setTodoTask((task) => {
+      const idx = task.findIndex((el) => el.id === id);
+      const oldItem = task[idx];
       const newItem = { ...oldItem, done: !oldItem.done };
-      const newArray = [...todoDate.slice(0, idx), newItem, ...todoDate.slice(idx + 1)];
-      return {
-        todoDate: newArray,
-      };
+      const newArray = [...task.slice(0, idx), newItem, ...task.slice(idx + 1)];
+      return newArray;
     });
   };
-
-  date = () => {
-    const date = new Date();
-    return formatDistance(date, new Date(), { addSuffix: true });
-  };
-
-  filter(items, filter) {
-    if (filter === 'all') {
+  const filter = (items, filteres) => {
+    if (filteres === "all") {
       return items;
     }
-    if (filter === 'active') {
+    if (filteres === "active") {
       return items.filter((item) => !item.done);
     }
-    if (filter === 'done') {
+    if (filteres === "done") {
       return items.filter((item) => item.done);
     }
     return items;
-  }
+  };
+  const onFilterGhange = (filters) => {
+    setFiltration(filters);
+  };
+  const visibleItems = filter(todoTask, filtration);
+  const doneCount = todoTask.filter((el) => el.done).length;
+  const todoCount = todoTask.length - doneCount;
 
-  createNewTask(label) {
-    return {
-      label,
-      done: false,
-      id: Math.random(this.maxId) 
-    };
-  }
+  return (
+    <section className="todoapp">
+      <header className="header">
+        <h1>todos</h1>
+      </header>
 
-  render() {
-    const { todoDate, filter } = this.state;
-    const doneCount = todoDate.filter((el) => el.done).length;
-    const todoCount = todoDate.length - doneCount;
-
-    const visibility = this.filter(todoDate, filter);
-    return (
-      <section className="todoapp">
-        <header className="header">
-          <h1>todos</h1>
-        </header>
-
-        <NewTaskForm addItem={this.addItem} />
-        <TackList todos={visibility} onToggleDone={this.onToggleDone} onDeleted={this.deleteItem} date={this.date} />
-        <Footer
-          todoCount={todoCount}
-          filter={filter}
-          onFilterChange={this.onFilterChange}
-          deleteItems={this.deleteItems}
-        />
-      </section>
-    );
-  }
+      <NewTaskForm addItem={addItem} />
+      <TaskList
+        todos={visibleItems}
+        onDeleted={deleteItem}
+        onToggleDone={onToggleDone}
+      />
+      <Footer
+        todoCount={todoCount}
+        filter={filter}
+        onFilterGhange={onFilterGhange}
+        deleteItems={deleteItems}
+      />
+    </section>
+  );
 }
+
+export default App;
