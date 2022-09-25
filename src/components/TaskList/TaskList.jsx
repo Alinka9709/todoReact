@@ -20,7 +20,7 @@ export default function TaskList({ todos, onDeleted, onToggleDone, date }) {
 
   return (
     <>
-      <ul className="todo-list">{elements}</ul>;
+      <ul className="todo-list">{elements}</ul>
     </>
   );
 }
