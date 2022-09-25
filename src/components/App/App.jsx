@@ -19,6 +19,7 @@ export default class App extends React.Component {
         { label: 'cccc', id: 3 },
       ],
       filter: '',
+      
     };
   }
 
